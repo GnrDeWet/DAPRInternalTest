@@ -12,8 +12,8 @@ spec:
     - name: port
       value: "587"
     - name: user
-      value: "postmaster@sandbox61e3cbe8314747688efd713f75d9da83.mailgun.org"
+      value: ""
     - name: password
-      value: "86521a41a55ff0e263243a907419063b-8a084751-6725a080"
+      value: ""
     - name: emailFrom
-      value: "Excited User <mailgun@sandbox61e3cbe8314747688efd713f75d9da83.mailgun.org>"
+      value: ""

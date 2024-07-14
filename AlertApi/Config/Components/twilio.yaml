@@ -8,8 +8,8 @@ spec:
   version: v1
   metadata:
     - name: accountSID
-      value: "AC676be944ec3ed284a6c65f0d7a79a079"
+      value: ""
     - name: authToken
-      value: "df533bc335fdb26ffe3018838e1215c2"
+      value: ""
     - name: fromNumber
-      value: "+18148014723"
+      value: ""
