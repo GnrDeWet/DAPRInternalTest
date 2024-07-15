@@ -2,5 +2,5 @@
 
 public class SmsRequest
 {
-    public string PhoneNumber { get; set; }
+    public string? PhoneNumber { get; set; }
 }

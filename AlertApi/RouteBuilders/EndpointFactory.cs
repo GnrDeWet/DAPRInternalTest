@@ -16,32 +16,45 @@ namespace AlertApi.RouteBuilders
     {
         public static void RegisterEndpoints(this WebApplication app)
         {
-            app.MapPost("/sendSms", async ([FromBody] SmsRequest request) =>
+            app.MapPost("/sendSms", async (SmsRequest smsRequest) =>
             {
+                if (smsRequest == null || string.IsNullOrEmpty(smsRequest.PhoneNumber))
+                {
+                    throw new ArgumentNullException(nameof(smsRequest), "SMS request or its properties cannot be null or empty");
+                }
+                
                 // Invoke a binding to an sms service provider (You will need to create your own twilion account) 
                 // No body as free tier of twilio offers no message capability
                 using var client = new DaprClientBuilder().Build();
 
                 var smsMetadata = new Dictionary<string, string>
                 {
-                    { "toNumber", request.PhoneNumber }//,
+                    { "toNumber", smsRequest.PhoneNumber }//,
                     //{ "body", "Hello, this is a test SMS sent via Dapr and Twilio." }
                 };
 
                 await client.InvokeBindingAsync("twilio", "create", string.Empty, smsMetadata);
 
-                app.Logger.LogInformation("SMS sent successfully");
+                app.Logger.LogInformation($"SMS sent to: {smsRequest.PhoneNumber}");
+                
+                return Results.Ok();
+                
             });
 
-            app.MapPost("/sendEmail", async ([FromBody] EmailRequest request) =>
+            app.MapPost("/sendEmail", async (EmailRequest emailRequest) =>
             {
+                if (emailRequest == null || string.IsNullOrEmpty(emailRequest.EmailAddress))
+                {
+                    throw new ArgumentNullException(nameof(emailRequest), "Email request or its properties cannot be null or empty");
+                }
+                
                 // Invoke a binding to an email service provider (you will need to create your own sendgrid account)
                 // Used Mailgun
                 using var client = new DaprClientBuilder().Build();
 
                 var emailMetadata = new Dictionary<string, string>
                 {
-                    { "emailTo", request.EmailAddress },
+                    { "emailTo", emailRequest.EmailAddress },
                     { "subject", "This is a test email" }
                 };
                 
@@ -49,12 +62,19 @@ namespace AlertApi.RouteBuilders
                 
                 await client.InvokeBindingAsync("smtp", "create", emailBody, emailMetadata);
 
-
-                app.Logger.LogInformation("Email sent successfully");
+                app.Logger.LogInformation($"Email sent to: {emailRequest.EmailAddress}");
+                
+                return Results.Ok();
+                
             });
 
-            app.MapPost("/sendAlert", async (ApiAlertRequest alertRequest) =>
+            app.MapPost("/sendAlert", async (AlertRequest alertRequest) =>
             {
+                if (alertRequest == null || alertRequest.AlertTypes == null || alertRequest.ClientName == null)
+                {
+                    throw new ArgumentNullException(nameof(alertRequest), "Alert request or its properties cannot be null");
+                }
+                
                 // Publish multiple events via rabbitmq (could also use redis but only in self-hosted kubernetes mode) 
                 using var client = new DaprClientBuilder().Build();
 
@@ -76,14 +96,14 @@ namespace AlertApi.RouteBuilders
                         { "publishTime", pubRequest.PublishRequestTime.ToString(CultureInfo.CurrentCulture) }
                     };
 
-                    await client.PublishEventAsync("redis-pubsub", "alerts", pubRequest); //, pubMetadata);
+                    await client.PublishEventAsync("redis-pubsub", "alerts", pubRequest, pubMetadata);
                     
-                    //await client.PublishEventAsync("orderpubsub", "orders", order);
-                    
-                    app.Logger.LogInformation("Published data at: " + pubRequest.PublishRequestTime);    
+                    app.Logger.LogInformation($"Published alert: {pubRequest.AlertType} for client: {alertRequest.ClientName} at {pubRequest.PublishRequestTime}");
 
                     await Task.Delay(TimeSpan.FromSeconds(1));
                 }
+                
+                return Results.Ok();
 
             });
         }

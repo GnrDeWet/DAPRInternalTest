@@ -9,6 +9,6 @@ namespace Common.Models.Responses
 {
     public class AlertResponse : IAlertResponse
     {
-        public string Response { get ; set ; }
+        public string? Response { get ; set ; }
     }
 }

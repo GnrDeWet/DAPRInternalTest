@@ -8,8 +8,8 @@ namespace Common.Interfaces.Requests
 {
     public interface IAlertRequest
     {
-        public string ClientName { get; set; }
-        public IList<string> AlertTypes { get; set; }
+        public string? ClientName { get; set; }
+        public IList<string>? AlertTypes { get; set; }
 
     }
 }

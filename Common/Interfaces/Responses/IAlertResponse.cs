@@ -8,6 +8,6 @@ namespace Common.Interfaces.Responses
 {
     public interface IAlertResponse
     {
-        public string Response { get; set; } 
+        public string? Response { get; set; } 
     }
 }

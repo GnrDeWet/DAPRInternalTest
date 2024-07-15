@@ -27,3 +27,7 @@ app.MapPost("/alert", [Topic("redis-pubsub", "alerts")] (PublishAlertRequest pub
 });
 
 await app.RunAsync();
+
+/*
+ *  dapr run --app-id subapi --app-port 5148 --resources-path ./Config/Components -- dotnet run
+ */

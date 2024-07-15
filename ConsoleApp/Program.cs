@@ -1,8 +1,11 @@
 ﻿using Dapr.Client;
 using Common.Models.Requests;
 using System.Net.Http.Json;
+using System.Text;
+using System.Text.Json;
+using ConsoleApp.Models.Requests;
 
-var client = new DaprClientBuilder().Build();
+var httpClient = DaprClient.CreateInvokeHttpClient();
 
 List<string> alerts = new() { "Alert1", "Alert2", "Alert3" };
 
@@ -15,11 +18,7 @@ var alertRequest = new AlertRequest
 // Invoke sendAlert endpoint
 try
 {
-    var sendAlertResponse = await client.InvokeMethodAsync<AlertRequest, HttpResponseMessage>(
-        HttpMethod.Post,
-        "alertsapi",
-        "sendAlert",
-        alertRequest);
+    var sendAlertResponse = await httpClient.PostAsJsonAsync("http://alertsapi/sendAlert", alertRequest);
 
     if (sendAlertResponse.IsSuccessStatusCode)
     {
@@ -27,27 +26,24 @@ try
     }
     else
     {
-        Console.WriteLine($"Failed to send alerts. Status Code: {sendAlertResponse.StatusCode}");
+        var result = await sendAlertResponse.Content.ReadAsStringAsync();
+        Console.WriteLine($"Failed to send alerts. Status Code: {sendAlertResponse.StatusCode}. Message: {result}");
     }
 }
 catch (Exception ex)
 {
-    Console.WriteLine($"Exception during sendAlert: {ex.ToString()}");
+    Console.WriteLine($"Exception during sendAlert: {ex}");
 }
 
 // Invoke sendSms endpoint
 try
 {
-    var smsRequest = new
+    var smsRequest = new SmsRequest
     {
         PhoneNumber = "+1234567890"
     };
-
-    var sendSmsResponse = await client.InvokeMethodAsync<object, HttpResponseMessage>(
-        HttpMethod.Post,
-        "alertsapi",
-        "sendSms",
-        smsRequest);
+    
+    var sendSmsResponse = await httpClient.PostAsJsonAsync("http://alertsapi/sendSms", smsRequest);
 
     if (sendSmsResponse.IsSuccessStatusCode)
     {
@@ -55,7 +51,8 @@ try
     }
     else
     {
-        Console.WriteLine($"Failed to send SMS. Status Code: {sendSmsResponse.StatusCode}");
+        var result = await sendSmsResponse.Content.ReadAsStringAsync();
+        Console.WriteLine($"Failed to send SMS. Status Code: {sendSmsResponse.StatusCode}. Message: {result}");
     }
 }
 catch (Exception ex)
@@ -66,16 +63,12 @@ catch (Exception ex)
 // Invoke sendEmail endpoint
 try
 {
-    var emailRequest = new
+    var emailRequest = new EmailRequest()
     {
-        EmailAddress = "gnrdewet@gmail.com"
+        EmailAddress = "example@gmail.com"
     };
-
-    var sendEmailResponse = await client.InvokeMethodAsync<object, HttpResponseMessage>(
-        HttpMethod.Post,
-        "alertsapi",
-        "sendEmail",
-        emailRequest);
+    
+    var sendEmailResponse = await httpClient.PostAsJsonAsync("http://alertsapi/sendEmail", emailRequest); 
 
     if (sendEmailResponse.IsSuccessStatusCode)
     {
@@ -83,7 +76,8 @@ try
     }
     else
     {
-        Console.WriteLine($"Failed to send email. Status Code: {sendEmailResponse.StatusCode}");
+        var result = await sendEmailResponse.Content.ReadAsStringAsync();
+        Console.WriteLine($"Failed to send email. Status Code: {sendEmailResponse.StatusCode}. Message: {result}");
     }
 }
 catch (Exception ex)
@@ -92,3 +86,8 @@ catch (Exception ex)
 }
 
 Console.ReadLine();
+
+
+/*
+ *  dapr run --app-id consoleapp -- dotnet run
+ */
